@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-dark.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Gridmvcmasterdetail by AmeetAB</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Gridmvcmasterdetail</h1>
+          <h2>Sample app to demo master-details grid functionality using Grid.Mvc</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/AmeetAB/GridMvcMasterDetail/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/AmeetAB/GridMvcMasterDetail/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/AmeetAB/GridMvcMasterDetail" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>
+<a id="gridmvcmasterdetail" class="anchor" href="#gridmvcmasterdetail" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>GridMvcMasterDetail</h1>
+
+<p>Sample app to demo master-details grid functionality using Grid.Mvc</p>
+
+<h2>
+<a id="steps" class="anchor" href="#steps" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Steps</h2>
+
+<h3>
+<a id="1-nuget-install-gridmvc" class="anchor" href="#1-nuget-install-gridmvc" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1. Nuget install Grid.Mvc</h3>
+
+<h3>
+<a id="2-setup-the-index-action-to-return-a-list-of-departments" class="anchor" href="#2-setup-the-index-action-to-return-a-list-of-departments" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2. Setup the Index action to return a list of Departments</h3>
+
+<pre><code>public ActionResult Index()
+{
+    var departments = BuildDepartmentsList();
+    return View(departments);
+}
+</code></pre>
+
+<h3>
+<a id="3-add-the-following-code-to-the-page-that-holds-the-master-grid-ie-setup-the-index-view" class="anchor" href="#3-add-the-following-code-to-the-page-that-holds-the-master-grid-ie-setup-the-index-view" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3. Add the following code to the page that holds the master grid i.e. setup the Index view</h3>
+
+<pre><code>&lt;div class="row"&gt;
+    @Html.Grid(Model).Named("departmentsGrid").Columns(columns =&gt;
+    {
+        columns.Add(dept =&gt; dept.Id).Titled("Department ID").SetWidth(110).Sortable(true);
+        columns.Add(dept =&gt; dept.Name).Titled("Department Name").SetWidth(200);
+    }).WithPaging(20)
+&lt;/div&gt;
+&lt;div class="row"&gt;
+    &lt;div id="employees-grid"&gt;&lt;/div&gt;
+&lt;/div&gt;
+@section CustomStyles
+{
+    &lt;link href="@Url.Content("~/Content/Gridmvc.css")" rel="stylesheet" type="text/css"/&gt;
+}
+
+@section scripts
+{
+    &lt;script src="@Url.Content("~/Scripts/gridmvc.min.js")" type="text/javascript"&gt;&lt;/script&gt;
+    &lt;script type="text/javascript"&gt;
+        $(function() {
+            pageGrids.departmentsGrid.onRowSelect(function(e) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Home/EmployeesGrid/' + e.row.Id,
+                    success: function(data) {
+                        $('#employees-grid').html(data);
+                    }
+                });
+            });
+        });
+    &lt;/script&gt;
+}
+</code></pre>
+
+<p>The script is setting up an event handler function to fire when a row is selected.</p>
+
+<h3>
+<a id="4-action-to-retrieve-the-details-grid" class="anchor" href="#4-action-to-retrieve-the-details-grid" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>4. Action to retrieve the details grid</h3>
+
+<pre><code>public ActionResult EmployeesGrid(int id)
+{
+    var employeesInDepartment = BuildEmployeesList().Where(emp =&gt; emp.DepartmentId == id);
+    return PartialView(employeesInDepartment);
+}
+</code></pre>
+
+<h3>
+<a id="5-details-view---employeesgridcshtml-partial-view" class="anchor" href="#5-details-view---employeesgridcshtml-partial-view" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>5. Details view - EmployeesGrid.cshtml partial view</h3>
+
+<pre><code>@using GridMvc.Html
+@model IEnumerable&lt;GridMvcMasterDetail.Models.Employee&gt;
+
+@{
+    Layout = null;
+}
+
+&lt;h3&gt;Employees in Department ID: @Html.Raw(Model.Select(p =&gt; p.DepartmentId).FirstOrDefault())&lt;/h3&gt;
+
+@Html.Grid(Model).Named("employeesGrid").Columns(columns =&gt;
+{
+    columns.Add(emp =&gt; emp.Id).Titled("Employee ID").SetWidth(70);
+    columns.Add(emp =&gt; emp.Name).Titled("Employee Name").SetWidth(110);
+    columns.Add(emp =&gt; emp.Age).Titled("Age").SetWidth(60);
+})
+</code></pre>
+
+<h1>
+<a id="demo-is-here" class="anchor" href="#demo-is-here" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demo is here</h1>
+        </section>
+
+        <footer>
+          Gridmvcmasterdetail is maintained by <a href="https://github.com/AmeetAB">AmeetAB</a><br>
+          This page was generated by <a href="https://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="https://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+        
+      </div>
+    </div>
+  </body>
+</html>
