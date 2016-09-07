@@ -1,0 +1,15 @@
+﻿@using GridMvc.Html
+@model IEnumerable<GridMvcMasterDetail.Models.Employee>
+  
+@{
+    Layout = null;
+}
+
+<h3>Employees in Department ID: @Html.Raw(Model.Select(p => p.DepartmentId).FirstOrDefault())</h3>
+
+@Html.Grid(Model).Named("employeesGrid").Columns(columns =>
+{
+    columns.Add(emp => emp.Id).Titled("Employee ID").SetWidth(70);
+    columns.Add(emp => emp.Name).Titled("Employee Name").SetWidth(110);
+    columns.Add(emp => emp.Age).Titled("Age").SetWidth(60);
+})

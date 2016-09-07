@@ -1,0 +1,44 @@
+﻿@using GridMvc.Html
+@model IEnumerable<GridMvcMasterDetail.Models.Department>
+@{
+    ViewBag.Title = "Grid MVC - Master Detail Demo";
+}
+
+<div class="jumbotron">
+    <h1>Grid MVC - Master Detail Demo</h1>
+    <p class="lead">Demo of a master detail functionality when master and detail are both grids. Makes use of Grid.Mvc.</p>
+    <p><a href="https://gridmvc.codeplex.com/" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+</div>
+
+<div class="row">
+    @Html.Grid(Model).Named("departmentsGrid").Columns(columns =>
+    {
+        columns.Add(dept => dept.Id).Titled("Department ID").SetWidth(110).Sortable(true);
+        columns.Add(dept => dept.Name).Titled("Department Name").SetWidth(200);
+    }).WithPaging(20)
+</div>
+<div class="row">
+    <div id="employees-grid"></div>
+</div>
+@section CustomStyles
+{
+    <link href="@Url.Content("~/Content/Gridmvc.css")" rel="stylesheet" type="text/css"/>
+}
+
+@section scripts
+{
+    <script src="@Url.Content("~/Scripts/gridmvc.min.js")" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(function() {
+            pageGrids.departmentsGrid.onRowSelect(function(e) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/Home/EmployeesGrid/' + e.row.Id,
+                    success: function(data) {
+                        $('#employees-grid').html(data);
+                    }
+                });
+            });
+        });
+    </script>
+}
